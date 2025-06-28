@@ -1,0 +1,399 @@
+from google.colab import files
+
+# Upload the file
+uploaded = files.upload()
+
+
+import pandas as pd
+
+file_name = 'clicks.csv'
+df = pd.read_csv(file_name)
+
+# Display the first few rows of the dataset
+print(df.head())
+
+  user_id group purchase_made
+0  8e27bf9a     A            No
+1  eb89e6f0     A            No
+2  7119106a     A            No
+3  e53781ff     A            No
+4  02d48cf1     A           Yes
+
+
+# ⬇️ 1. Install / import libraries
+!pip install --quiet scipy pandas  # usually pre-installed in Colab, but harmless
+import pandas as pd
+from scipy.stats import chi2_contingency
+import numpy as np
+
+# ⬇️ 2. Load data
+df = pd.read_csv('clicks.csv')   # adjust the path if your file lives elsewhere
+
+# ⬇️ 3. Build contingency table (rows = variant group, cols = purchase outcome)
+table = pd.crosstab(df['group'], df['purchase_made'])
+print("Contingency table:\n", table, "\n")
+
+# ⬇️ 4. Chi-Square test of independence
+chi2, p, dof, expected = chi2_contingency(table)
+
+print(f"Chi-Square statistic : {chi2:.4f}")
+print(f"Degrees of freedom   : {dof}")
+print(f"p-value              : {p:.4g}")
+
+# ⬇️ 5. Optional: Cramér’s V (effect size)
+n = table.values.sum()
+cramers_v = np.sqrt(chi2 / (n * (min(table.shape) - 1)))
+print(f"Cramér’s V           : {cramers_v:.4f}")
+
+# Quick inference helper
+alpha = 0.05
+if p < alpha:
+    print(f"Since p < {alpha}, reject H0 ➜ evidence of association.")
+else:
+    print(f"Since p ≥ {alpha}, fail to reject H0 ➜ no strong evidence of association.")
+
+
+Contingency table:
+ purchase_made    No  Yes
+group                   
+A              1350  316
+B              1483  183
+C              1583   83 
+
+Chi-Square statistic : 159.4195
+Degrees of freedom   : 2
+p-value              : 2.413e-35
+Cramér’s V           : 0.1786
+Since p < 0.05, reject H0 ➜ evidence of association.
+
+
+
+# Calculate and print the number of visitors
+num_visits = len(df)        # or df.shape[0]
+print("Number of visitors this week:", num_visits)
+
+Number of visitors this week: 4999
+
+
+import math
+
+# Revenue target and price point
+target_revenue = 1000          # dollars
+price_099      = 0.99          # dollars per sale
+
+# Calculate and round up
+num_sales_needed_099 = math.ceil(target_revenue / price_099)
+print("Sales needed at $0.99 to hit $1 000:", num_sales_needed_099)
+
+Sales needed at $0.99 to hit $1 000: 1011
+
+# num_sales_needed_099 was computed earlier, e.g.:
+# num_sales_needed_099 = math.ceil(1000 / 0.99)   # -> 1011
+
+# num_visits was computed from the data, e.g.:
+# num_visits = len(df)
+
+# ⬇️ Required proportion of weekly visitors who must buy at $0.99
+p_sales_needed_099 = num_sales_needed_099 / num_visits
+
+print("Proportion needed (decimal):", p_sales_needed_099)
+print("Proportion needed (percent): {:.2%}".format(p_sales_needed_099))
+
+# num_sales_needed_099 was computed earlier, e.g.:
+# num_sales_needed_099 = math.ceil(1000 / 0.99)   # -> 1011
+
+# num_visits was computed from the data, e.g.:
+# num_visits = len(df)
+
+# ⬇️ Required proportion of weekly visitors who must buy at $0.99
+p_sales_needed_099 = num_sales_needed_099 / num_visits
+
+print("Proportion needed (decimal):", p_sales_needed_099)
+print("Proportion needed (percent): {:.2%}".format(p_sales_needed_099))
+
+
+import math
+
+# --- Inputs -------------------------------------------------------------
+target_revenue = 1000          # weekly $ goal
+price_199      = 1.99
+price_499      = 4.99
+
+# num_visits should already be defined from the earlier step:
+# num_visits = len(df)
+
+# --- Sales needed -------------------------------------------------------
+num_sales_needed_199 = math.ceil(target_revenue / price_199)
+num_sales_needed_499 = math.ceil(target_revenue / price_499)
+
+# --- Proportion of visitors that must convert --------------------------
+p_sales_needed_199 = num_sales_needed_199 / num_visits
+p_sales_needed_499 = num_sales_needed_499 / num_visits
+
+# --- Output -------------------------------------------------------------
+print(f"Sales needed at $1.99 : {num_sales_needed_199}")
+print(f"Sales needed at $4.99 : {num_sales_needed_499}\n")
+
+print("Proportion of weekly visitors who must buy:")
+print(f"  $1.99 → {p_sales_needed_199:.4%}")
+print(f"  $4.99 → {p_sales_needed_499:.4%}")
+
+Sales needed at $1.99 : 503
+Sales needed at $4.99 : 201
+
+Proportion of weekly visitors who must buy:
+  $1.99 → 10.0620%
+  $4.99 → 4.0208%
+
+
+# --- Sample size (all visitors who saw $0.99) ---------------------------
+samp_size_099 = df[df['group'] == 'A'].shape[0]
+
+# --- Purchases within that sample --------------------------------------
+sales_099 = df[(df['group'] == 'A') & (df['purchase_made'] == 1)].shape[0]
+# If your column is True/False, use: df['purchase_made'] == True
+# If it's "Yes"/"No", use: df['purchase_made'] == "Yes"
+
+print(f"samp_size_099 (Group A visitors) : {samp_size_099}")
+print(f"sales_099     (Group A purchases): {sales_099}")
+
+samp_size_099 (Group A visitors) : 1666
+sales_099     (Group A purchases): 0
+
+# --- Group B ($1.99) ----------------------------------------------------
+samp_size_199 = df[df['group'] == 'B'].shape[0]
+sales_199      = df[(df['group'] == 'B') & (df['purchase_made'] == 1)].shape[0]
+# If your purchase column is True/False use == True; if "Yes"/"No", use == "Yes"
+
+# --- Group C ($4.99) ----------------------------------------------------
+samp_size_499 = df[df['group'] == 'C'].shape[0]
+sales_499      = df[(df['group'] == 'C') & (df['purchase_made'] == 1)].shape[0]
+
+# --- Display the results ------------------------------------------------
+print(f"samp_size_199 (Group B visitors) : {samp_size_199}")
+print(f"sales_199     (Group B purchases): {sales_199}\n")
+
+print(f"samp_size_499 (Group C visitors) : {samp_size_499}")
+print(f"sales_499     (Group C purchases): {sales_499}")
+
+samp_size_199 (Group B visitors) : 1666
+sales_199     (Group B purchases): 0
+
+samp_size_499 (Group C visitors) : 1666
+sales_499     (Group C purchases): 0
+
+
+from scipy.stats import binomtest   # new name since SciPy 1.11+
+
+# One-sided binomial test for Group A ($0.99)
+#   H0: true conversion rate = p_sales_needed_099
+#   H1: true conversion rate > p_sales_needed_099
+result   = binomtest(
+    k=sales_099,          # number of purchases
+    n=samp_size_099,      # sample size (visitors in Group A)
+    p=p_sales_needed_099, # target rate needed for $1 000 revenue
+    alternative='greater'
+)
+
+pvalueA = result.pvalue
+print("p-value for Group A (one-sided):", pvalueA)
+
+p-value for Group A (one-sided): 1.0
+
+
+from scipy.stats import binomtest   # SciPy ≥1.11+
+
+alpha = 0.05   # significance level
+
+# --- Group B ($1.99) ----------------------------------------------------
+resB = binomtest(
+    k=sales_199,          # purchases in Group B
+    n=samp_size_199,      # visitors in Group B
+    p=p_sales_needed_199, # target conversion rate for $1.99
+    alternative='greater'
+)
+pvalueB = resB.pvalue
+print(f"Group B p-value (one-sided): {pvalueB:.4g}")
+print("  ⇒", "significant" if pvalueB < alpha else "not significant", "\n")
+
+# --- Group C ($4.99) ----------------------------------------------------
+resC = binomtest(
+    k=sales_499,          # purchases in Group C
+    n=samp_size_499,      # visitors in Group C
+    p=p_sales_needed_499, # target conversion rate for $4.99
+    alternative='greater'
+)
+pvalueC = resC.pvalue
+print(f"Group C p-value (one-sided): {pvalueC:.4g}")
+print("  ⇒", "significant" if pvalueC < alpha else "not significant")
+
+Group B p-value (one-sided): 1
+  ⇒ not significant 
+
+Group C p-value (one-sided): 1
+  ⇒ not significant
+
+
+# ===================== 1. Imports & data load ===========================
+import pandas as pd
+import numpy as np
+import math
+from scipy.stats import chi2_contingency, binomtest
+
+abdata = pd.read_csv("clicks.csv")
+print(abdata.head(), "\n")
+
+# ===================== 2. Chi-Square test (A vs B vs C) =================
+Xtab = pd.crosstab(abdata["group"], abdata["purchase_made"])
+print("Contingency table:\n", Xtab, "\n")
+
+chi2, pval_chi, dof, expected = chi2_contingency(Xtab)
+print(f"Chi-Square p-value: {pval_chi:.4g}\n")
+
+# ===================== 3. Weekly traffic ================================
+num_visits = len(abdata)
+print("Weekly visitors:", num_visits, "\n")
+
+# ===================== 4. Revenue targets per price =====================
+target_revenue = 1000  # $ per week
+price_points   = {"0.99": 0.99, "1.99": 1.99, "4.99": 4.99}
+
+def sales_needed(price):
+    n_sales = math.ceil(target_revenue / price)
+    prop    = n_sales / num_visits
+    return n_sales, prop
+
+needs = {lbl: sales_needed(p) for lbl, p in price_points.items()}
+for lbl, (n_sales, prop) in needs.items():
+    print(f"${lbl}: need {n_sales} sales  →  {prop:.2%} of visitors")
+print()
+
+p_sales_needed_099 = needs["0.99"][1]
+p_sales_needed_199 = needs["1.99"][1]
+p_sales_needed_499 = needs["4.99"][1]
+
+# ===================== 5. Sample sizes & purchases per group ============
+def group_stats(code):
+    mask_group   = abdata["group"] == code
+    samp_size    = mask_group.sum()
+    sales        = (mask_group & (abdata["purchase_made"] == "Yes")).sum()
+    return samp_size, sales
+
+samp_size_099, sales_099 = group_stats("A")
+samp_size_199, sales_199 = group_stats("B")
+samp_size_499, sales_499 = group_stats("C")
+
+print(f"Group A ($0.99): {sales_099}/{samp_size_099} bought")
+print(f"Group B ($1.99): {sales_199}/{samp_size_199} bought")
+print(f"Group C ($4.99): {sales_499}/{samp_size_499} bought\n")
+
+# ===================== 6. One-sided binomial tests ======================
+pvalueA = binomtest(sales_099, n=samp_size_099,
+                    p=p_sales_needed_099, alternative="greater").pvalue
+pvalueB = binomtest(sales_199, n=samp_size_199,
+                    p=p_sales_needed_199, alternative="greater").pvalue
+pvalueC = binomtest(sales_499, n=samp_size_499,
+                    p=p_sales_needed_499, alternative="greater").pvalue
+
+print(f"p-value Group A (0.99): {pvalueA:.4g}")
+print(f"p-value Group B (1.99): {pvalueB:.4g}")
+print(f"p-value Group C (4.99): {pvalueC:.4g}\n")
+
+# ===================== 7. Pick the winning price ========================
+alpha = 0.05
+significant = {"0.99": pvalueA < alpha,
+               "1.99": pvalueB < alpha,
+               "4.99": pvalueC < alpha}
+
+final_answer = max((price for price, ok in significant.items() if ok),
+                   key=float, default="None")
+
+print("Chosen price point:", final_answer)
+
+  user_id group purchase_made
+0  8e27bf9a     A            No
+1  eb89e6f0     A            No
+2  7119106a     A            No
+3  e53781ff     A            No
+4  02d48cf1     A           Yes 
+
+Contingency table:
+ purchase_made    No  Yes
+group                   
+A              1350  316
+B              1483  183
+C              1583   83 
+
+Chi-Square p-value: 2.413e-35
+
+Weekly visitors: 4999 
+
+$0.99: need 1011 sales  →  20.22% of visitors
+$1.99: need 503 sales  →  10.06% of visitors
+$4.99: need 201 sales  →  4.02% of visitors
+
+Group A ($0.99): 316/1666 bought
+Group B ($1.99): 183/1666 bought
+Group C ($4.99): 83/1666 bought
+
+p-value Group A (0.99): 0.9052
+p-value Group B (1.99): 0.1139
+p-value Group C (4.99): 0.02953
+
+Chosen price point: 4.99
+
+
+import pandas as pd, math
+import matplotlib.pyplot as plt
+import statsmodels.stats.api as sms
+
+# --- Config -----------------------------------------------------------
+price_map = {'A': 0.99, 'B': 1.99, 'C': 4.99}
+revenue_goal = 1000  # $ per week
+
+# --- Load data --------------------------------------------------------
+df = pd.read_csv('clicks.csv')
+df['purchased'] = df['purchase_made'] == 'Yes'
+
+# --- Aggregate counts -------------------------------------------------
+agg = (df.groupby('group')['purchased']
+         .agg(['sum', 'count'])
+         .rename(columns={'sum': 'sales', 'count': 'n'}))
+agg['rate'] = agg['sales'] / agg['n']
+
+# --- Required conversion per price -----------------------------------
+weekly_visitors = len(df)
+agg['p_req'] = agg.index.map(lambda g: math.ceil(revenue_goal / price_map[g]) / weekly_visitors)
+
+# --- Wilson 95 % CIs --------------------------------------------------
+ci_low, ci_high = sms.proportion_confint(agg['sales'], agg['n'], alpha=0.05, method='wilson')
+agg['ci_low'], agg['ci_high'] = ci_low, ci_high
+
+# --- Plot -------------------------------------------------------------
+order = sorted(price_map, key=lambda g: price_map[g])  # A→B→C by price
+colors = {'A': '#1f77b4', 'B': '#ff7f0e', 'C': '#2ca02c'}
+
+fig, ax = plt.subplots()
+for i, g in enumerate(order):
+    # Error bar
+    ax.errorbar(i, agg.loc[g, 'rate'],
+                yerr=[[agg.loc[g, 'rate'] - agg.loc[g, 'ci_low']],
+                      [agg.loc[g, 'ci_high'] - agg.loc[g, 'rate']]],
+                fmt='o', color=colors[g], capsize=4)
+    # Required line
+    ax.hlines(agg.loc[g, 'p_req'], i - 0.25, i + 0.25,
+              linestyles='dashed', colors=colors[g], alpha=0.5)
+    # Annotation
+    ax.text(i, agg.loc[g, 'rate'] + 0.01, f"{agg.loc[g, 'rate']:.1%}",
+            ha='center', va='bottom', fontsize=9)
+
+ax.set_xticks(range(len(order)))
+ax.set_xticklabels([f"${price_map[g]:.2f}" for g in order])
+ax.set_ylabel('Conversion rate')
+ax.set_title('Observed vs. Required Conversion Rates (95 % CI)')
+ax.set_ylim(0, max(agg['ci_high']) * 1.15)
+ax.grid(axis='y', ls=':')
+plt.show()
+
+
+
